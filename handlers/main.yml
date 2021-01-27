@@ -1,0 +1,43 @@
+---
+- name: Restart chronyd
+  service:
+    name: chronyd
+    state: restarted
+    enabled: yes
+
+- name: AWSLogs agent setup
+  command: >-
+    {{ aws_base_awslogs_cache_dir }}/awslogs-agent-setup.py
+    --non-interactive
+    --region {{ ansible_ec2_instance_identity_document_region }}
+    --dependency-path {{ aws_base_awslogs_cache_dir }}/AgentDependencies
+    --configfile {{ aws_base_awslogs_preconfig_file }}
+
+- name: Restart nvme-mapping service
+  systemd:
+    name: nvme-mapping
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+- name: Restart AWSLogs service
+  systemd:
+    name: awslogs
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  listen: AWSLogs agent setup
+
+- name: Link AWSLogs configuration directory
+  file:
+    src: "{{ aws_base_awslogs_config_dir }}"
+    dest: "{{ aws_base_awslogs_config_link }}"
+    state: link
+  listen: AWSLogs agent setup
+
+- name: Activate amazon-ssm-agent service
+  systemd:
+    name: amazon-ssm-agent
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

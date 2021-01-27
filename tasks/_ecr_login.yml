@@ -1,0 +1,6 @@
+---
+- name: Download ecr-login helper
+  get_url:
+    url: "https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/{{ aws_ecr_login_version }}/linux-amd64/docker-credential-ecr-login"
+    dest: /usr/bin/docker-credential-ecr-login
+    mode: 0755

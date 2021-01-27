@@ -1,0 +1,29 @@
+---
+tf_dir: >-
+  {{ lookup('env', 'MOLECULE_SCENARIO_DIRECTORY') }}/terraform
+
+tf_init: >-
+  terraform init -input=false
+
+tf_switch_workspace_to_item_name: >-
+  terraform workspace select {{ item.name }}
+  || terraform workspace new {{ item.name }}
+
+tf_default_workspace_and_delete_workspace_item_name: >-
+  terraform workspace select default
+  && terraform workspace delete {{ item.name }}
+
+tf_apply_prefix: >-
+  terraform apply -input=false -auto-approve
+
+tf_output_prefix: >-
+  terraform output -state={{ tf_dir }}
+
+tf_destroy_prefix: >-
+  terraform destroy -force
+
+tf_vars: >-
+  -var ami_owner="{{ item.ami_owner }}"
+  -var ami_name="{{ item.ami_name }}"
+  -var user="{{ item.user }}"
+  -var instance_type="{{ item.instance_type }}"

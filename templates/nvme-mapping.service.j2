@@ -1,0 +1,9 @@
+[Unit]
+Description=NVMe device mapping
+
+[Service]
+Type=oneshot
+ExecStart={{ aws_base_sbin_dir }}/nvme-to-block-mapping
+
+[Install]
+WantedBy=multi-user.target

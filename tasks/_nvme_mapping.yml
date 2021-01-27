@@ -1,0 +1,15 @@
+---
+- name: Copy NVME scripts to executable folder
+  copy:
+    src: "{{ item }}"
+    dest: "{{ aws_base_sbin_dir }}/{{ item }}"
+    mode: 0744
+  loop:
+    - ebsnvme-id
+    - nvme-to-block-mapping
+
+- name: Create nvme-mapping service
+  template:
+    src: nvme-mapping.service.j2
+    dest: /lib/systemd/system/nvme-mapping.service
+  notify: Restart nvme-mapping service

@@ -1,0 +1,11 @@
+---
+# vars file for aws-base
+aws_base_platform_key: >-
+  {{ ansible_lsb.id | lower }}_{{ ansible_lsb.major_release }}
+aws_base_sbin_dir: /usr/sbin
+
+aws_base_awslogs_config_dir: /var/awslogs/etc
+
+aws_base_chrony_conf:
+  centos_7: "/etc/chrony.conf"
+  debian_9: "/etc/chrony/chrony.conf"

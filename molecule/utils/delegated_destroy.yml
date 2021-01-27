@@ -1,0 +1,16 @@
+---
+- name: Destroy
+  hosts: localhost
+  gather_facts: false
+  no_log: false
+
+  tasks:
+    - name: Terraform destroy every platform
+      shell: >-
+        {{ tf_switch_workspace_to_item_name }}
+        && {{ tf_init }}
+        && {{ tf_destroy_prefix }} {{ tf_vars }}
+        && {{ tf_default_workspace_and_delete_workspace_item_name }}
+      args:
+        chdir: "{{ tf_dir }}"
+      loop: "{{ molecule_yml.platforms }}"

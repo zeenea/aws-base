@@ -1,0 +1,7 @@
+---
+- hosts: all
+  gather_facts: no
+
+  tasks:
+    - name: Wait for SSH
+      wait_for_connection:

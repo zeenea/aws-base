@@ -1,0 +1,4 @@
+---
+- name: seed
+  src: git+https://gitlab.com/wescalefr-oss/ansible-roles/seed.git
+  version: v2.1.1

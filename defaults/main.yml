@@ -1,0 +1,30 @@
+---
+# defaults file for aws-base
+aws_base_enable_awslogs: false
+
+aws_base_awslogs_cache_dir: /var/cache/awslogs
+
+aws_base_awslogs_config_link: /etc/awslogs
+
+aws_base_awslogs_preconfig_file: "{{ aws_base_awslogs_cache_dir }}/awslogs.conf"
+
+aws_base_awslogs_config_use_gzip: true
+
+aws_base_default_system_log_file:
+  debian_9: /var/log/syslog
+  centos_7: /var/log/messages
+# See: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AgentReference.html
+aws_base_awslogs_config_streams:
+
+  - file: "{{ aws_base_default_system_log_file[aws_base_platform_key] }}"
+    group_name: system
+    stream_name: "{instance_id}"       # predefined variables: {instance_id} {hostname} {ip_address}
+    format: "%b %d %H:%M:%S"
+    time_zone: "LOCAL"                 # in ['LOCAL', 'UTC']
+    initial_position: "start_of_file"  # in ['start_of_file', 'end_of_file']
+
+aws_base_pip_packages:
+  awscli2_version: "1.5.2"
+  jinja_version: "2.11.2"
+
+aws_ecr_login_version: 0.3.1

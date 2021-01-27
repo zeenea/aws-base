@@ -1,0 +1,39 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: delegated
+
+
+platforms:
+  - name: centos-7
+    ami_owner: "679593333241"
+    ami_name: "CentOS Linux 7 x86_64*"
+    instance_type: t3.small
+    user: centos
+
+  - name: debian-stretch
+    ami_owner: "379101102735"
+    ami_name: "debian-stretch-hvm-x86_64-gp2*"
+    instance_type: t3.small
+    user: admin
+
+lint:
+  name: yamllint
+  options:
+    config-file: "${MOLECULE_PROJECT_DIRECTORY}/molecule/.yamllint"
+
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  playbooks:
+    create: "${MOLECULE_PROJECT_DIRECTORY}/molecule/utils/delegated_create.yml"
+    prepare: "${MOLECULE_PROJECT_DIRECTORY}/molecule/utils/delegated_prepare.yml"
+    destroy: "${MOLECULE_PROJECT_DIRECTORY}/molecule/utils/delegated_destroy.yml"
+
+verifier:
+  name: testinfra
+  lint:
+    name: flake8

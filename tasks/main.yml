@@ -1,0 +1,25 @@
+---
+- name: Include tasks based on Linux distribution
+  include_tasks: >-
+    {{ ansible_distribution|lower }}_{{ ansible_distribution_major_version }}.yml
+
+- name: Install awscli
+  pip:
+    name:
+      - awscliv2==1.5.2
+      - jinja2==2.11.2
+      - boto3==1.16.60
+    state: present
+
+- name: Gather instance metadata facts
+  ec2_metadata_facts:
+
+- include_tasks: _nvme_mapping.yml
+
+- include_tasks: _awslogs.yml
+  when:
+    - aws_base_enable_awslogs
+
+- include_tasks: _ecr_login.yml
+
+- meta: flush_handlers

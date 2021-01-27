@@ -1,0 +1,57 @@
+---
+- name: Create molecule platforms
+  hosts: localhost
+  gather_facts: false
+  no_log: false #"{{ molecule_no_log }}"
+
+  tasks:
+    - name: Terraform apply every platform
+      shell: >-
+        {{ tf_switch_workspace_to_item_name }} && {{ tf_init }}
+        && {{ tf_apply_prefix }} {{ tf_vars }}
+      args:
+        chdir: "{{ tf_dir }}"
+      loop: "{{ molecule_yml.platforms }}"
+
+    - name: Extract all terraform outputs
+      set_fact:
+        platforms_tf_output: >-
+          {{
+            platforms_tf_output|default([])
+            + [
+                lookup('pipe',
+                  tf_output_prefix
+                  + ((item.name == 'default')|ternary('','/terraform.tfstate.d/'+item.name))
+                  + "/terraform.tfstate"
+                  + " -json")
+                |from_json
+              ]
+          }}
+      loop: "{{ molecule_yml.platforms }}"
+
+    - name: Persist temporary ssh keys
+      copy:
+        dest: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') + '/rsa_' + item.name.value }}"
+        content: "{{ item.ssh_private_key.value }}"
+        mode: 0600
+      loop: "{{ platforms_tf_output }}"
+
+    - name: Build molecule configuration
+      set_fact:
+        platforms_instances_conf: >-
+          {{
+            platforms_instances_conf|default([])
+            + [{
+              'instance': item.name.value,
+              'address': item.public_ip.value,
+              'user': item.user.value,
+              'port': item.port.value,
+              'identity_file': lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') + '/rsa_' + item.name.value
+            }]
+          }}
+      loop: "{{ platforms_tf_output }}"
+
+    - name: Persist molecule configuration
+      copy:
+        content: "{{ platforms_instances_conf | to_json | from_json | molecule_to_yaml | molecule_header }}"
+        dest: "{{ molecule_instance_config }}"

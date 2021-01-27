@@ -1,0 +1,33 @@
+---
+- name: Install EPEL repository and dependencies
+  yum:
+    name: epel-release
+
+- name: Install amazon-ssm-agent
+  yum:
+    name:
+      - https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+      - jq
+    state: present
+  notify: Activate amazon-ssm-agent service
+
+- name: Configure chrony (NTP) to use Amazon Time Sync Service (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-time.html)
+  lineinfile:
+    path: "{{ aws_base_chrony_conf[aws_base_platform_key] }}"
+    line: >-
+      {{ item.line | default(omit) }}
+    state: "{{ item.state }}"
+    regexp: >-
+      {{ item.regexp | default(omit) }}
+    insertafter: >-
+      {{ item.insertafter | default(omit) }}
+  loop:
+    - state: present
+      line: >-
+        server 169.254.169.123 prefer iburst
+      insertafter: >-
+        server .+centos.+ iburst
+    - state: absent
+      regexp: >-
+        server .+centos.+ iburst
+  notify: Restart chronyd
